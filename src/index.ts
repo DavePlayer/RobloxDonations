@@ -5,6 +5,7 @@ import SocketIO from 'socket.io'
 import dotenv from 'dotenv'
 import { google } from 'googleapis'
 import socket from 'socket.io'
+import moment from 'moment'
 
 
 // .env
@@ -61,6 +62,10 @@ app.post('/announceDonation', async (req: express.Request, res: express.Response
     const auth = new google.auth.GoogleAuth({
         scopes: ['https://www.googleapis.com/auth/spreadsheets']
     });
+    const time = moment().local().unix() + (3600) // 3600 because of winter time :|
+    // hate working with time
+    // doctor strange is going to kill me
+    console.log('time: ', time)
     try {
         const client = await auth.getClient();
         const sheets = await google.sheets({ version: 'v4', auth })
@@ -76,7 +81,7 @@ app.post('/announceDonation', async (req: express.Request, res: express.Response
             insertDataOption: 'INSERT_ROWS',
             range: `Donations!A:E`,
             // resource: { values: ['ktoś', 'mihalx', '120', '1970', 'image url', "message"] }
-            requestBody: { values: [[data.userName, 'mihalx', data.robuxAmmount, Date.now(), data.donateImageUrl, data.message]] }
+            requestBody: { values: [[data.userName, 'mihalx', data.robuxAmmount, time, data.donateImageUrl, data.message]] }
         })
     } catch (error) {
         console.log(error)
