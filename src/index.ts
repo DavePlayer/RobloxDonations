@@ -65,27 +65,27 @@ app.post('/announceDonation', async (req: express.Request, res: express.Response
     const time = moment().local().unix() + (3600) // 3600 because of winter time :|
     // hate working with time
     // doctor strange is going to kill me
-    console.log('time: ', time)
-    try {
-        const client = await auth.getClient();
-        const sheets = await google.sheets({ version: 'v4', auth })
-        // const response = await sheets.spreadsheets.values.get({ range: `Donations!A2:C2`, spreadsheetId: process.env.SHEET_ID })
 
-        // const [title, data]: any = response.data.values
+    // try {
+    //     const client = await auth.getClient();
+    //     const sheets = await google.sheets({ version: 'v4', auth })
+    //     // const response = await sheets.spreadsheets.values.get({ range: `Donations!A2:C2`, spreadsheetId: process.env.SHEET_ID })
 
-        // console.log('title: ', title, '\n\ndata: ', data)
-        await sheets.spreadsheets.values.append({
-            spreadsheetId: process.env.SHEET_ID,
-            auth,
-            valueInputOption: 'RAW',
-            insertDataOption: 'INSERT_ROWS',
-            range: `Donations!A:E`,
-            // resource: { values: ['ktoś', 'mihalx', '120', '1970', 'image url', "message"] }
-            requestBody: { values: [[data.userName, 'mihalx', data.robuxAmmount, time, data.donateImageUrl, data.message]] }
-        })
-    } catch (error) {
-        console.log(error)
-    }
+    //     // const [title, data]: any = response.data.values
+
+    //     // console.log('title: ', title, '\n\ndata: ', data)
+    //     await sheets.spreadsheets.values.append({
+    //         spreadsheetId: process.env.SHEET_ID,
+    //         auth,
+    //         valueInputOption: 'RAW',
+    //         insertDataOption: 'INSERT_ROWS',
+    //         range: `Donations!A:E`,
+    //         // resource: { values: ['ktoś', 'mihalx', '120', '1970', 'image url', "message"] }
+    //         requestBody: { values: [[data.userName, 'mihalx', data.robuxAmmount, time, data.donateImageUrl, data.message]] }
+    //     })
+    // } catch (error) {
+    //     console.log(error)
+    // }
 
     wws.emit('donate::donate', data)
 
