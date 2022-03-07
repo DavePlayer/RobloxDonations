@@ -9,7 +9,7 @@ import moment from 'moment'
 import https from 'https'
 import fs from 'fs'
 import path from 'path'
-import { websecurityscanner } from 'googleapis/build/src/apis/websecurityscanner'
+import jwt from 'jsonwebtoken'
 
 
 // .env
@@ -37,7 +37,17 @@ const server = https.createServer(credentials, app)
 const http = https.createServer(credentials, app)
 const wws = new socket.Server(http);
 
-wws.on("connection", (socket: SocketIO.Socket) => {
+wws.use((socket, next) => {
+    if (socket.handshake.query && socket.handshake.query.token) {
+        jwt.verify(socket.handshake.query.token as string, credentials.key, { algorithms: ['RS256'] }, function (err, decoded) {
+            if (err) return next(new Error('Authentication error'));
+            next();
+        });
+    }
+    else {
+        next(new Error('Authentication error'));
+    }
+}).on("connection", (socket: SocketIO.Socket) => {
     console.log("new client connected");
     socket.send("connection confirmed");
 
@@ -52,6 +62,27 @@ app.get('/', (req: express.Request, res: express.Response) => {
 })
 
 
+app.post('/authenticate', (req: express.Request, res: express.Response) => {
+    // if no body
+    if (!req.body) res.status(406).json({ status: "error", details: `no request body` })
+
+    const { login, password } = req.body
+
+    //if no login and password inside body
+    if (login == undefined || password == undefined)
+        return res.status(403).json({ status: "error", details: `invalid request body` })
+
+    // if login and password is wrong
+    if (login != process.env.USER_LOGIN || password != process.env.USER_PASSWORD)
+        return res.status(403).json({ status: 'error', details: 'invalid login data' })
+
+    console.log(req.body)
+
+    const token = jwt.sign({ id: 'mihalx' }, credentials.key, { algorithm: 'RS256', expiresIn: 60 })
+    return res.json({ token })
+})
+
+
 interface request {
     donateImageUrl: string;
     userName: string;
@@ -61,7 +92,7 @@ interface request {
 
 app.post('/announceDonation', async (req: express.Request, res: express.Response) => {
     if (!req.body) return res.status(406).json({ status: 'error', details: 'no body inside http request' })
-    if (req.body.login != process.env.GAME_LOGIN || req.body.password != process.env.GAME_PASSWORD) return res.status(403).json({ status: 'error', details: 'invalid login data' })
+    if (req.body.login != process.env.GAME_LOGIN || req.body.password != process.env.GAME_PASSWORD) return res.status(403).json({ status: 'error', details: 'invalid reqest body' })
     const data: request = {
         donateImageUrl: req.body.donateImageUrl,
         userName: req.body.userName,
