@@ -9,6 +9,7 @@ import moment from 'moment'
 import https from 'https'
 import fs from 'fs'
 import path from 'path'
+import { websecurityscanner } from 'googleapis/build/src/apis/websecurityscanner'
 
 
 // .env
@@ -33,7 +34,8 @@ app.use(helmet())
 const server = https.createServer(credentials, app)
 
 // websockets
-const http = require('http').createServer(app);
+const app2 = express()
+const http = https.createServer(credentials, app2)
 const wws = new socket.Server(http);
 
 wws.on("connection", (socket: SocketIO.Socket) => {
@@ -49,7 +51,6 @@ wws.on("connection", (socket: SocketIO.Socket) => {
 app.get('/', (req: express.Request, res: express.Response) => {
     res.send('sedn dunes')
 })
-
 
 
 interface request {
