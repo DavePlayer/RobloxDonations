@@ -6,12 +6,21 @@ import dotenv from 'dotenv'
 import { google } from 'googleapis'
 import socket from 'socket.io'
 import moment from 'moment'
+import https from 'https'
+import fs from 'fs'
+import path from 'path'
 
 
 // .env
 dotenv.config()
 
 // server www
+const privateKey = fs.readFileSync(path.resolve(__dirname, '../file.pem'));
+const certificate = fs.readFileSync(path.resolve(__dirname, '../file.crt'));
+const credentials = {
+    key: privateKey,
+    cert: certificate
+}
 const app = express()
 app.use(express.json({ limit: '10kb' }))
 const packetLimit = rateLimit({
@@ -21,6 +30,7 @@ const packetLimit = rateLimit({
 })
 app.use('/announceDonation', packetLimit)
 app.use(helmet())
+const server = https.createServer(credentials, app)
 
 // websockets
 const http = require('http').createServer(app);
@@ -92,7 +102,7 @@ app.post('/announceDonation', async (req: express.Request, res: express.Response
     res.send({ xd: 'xd' })
 })
 
-app.listen(9000, () => console.log(`www on port 9000`))
+server.listen(9000, () => console.log(`www on port 9000`))
 http.listen(8080, () => console.log("http working on 8080"));
 
 console.log('works again')
