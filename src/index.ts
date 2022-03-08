@@ -30,6 +30,9 @@ const packetLimit = rateLimit({
     message: { status: 'error', details: 'too many request' } // message to send
 })
 app.use('/announceDonation', packetLimit)
+// app.use('/authenticate', (req: express.Request, res: express.Response, next) => {
+
+// })
 app.use(helmet())
 const server = https.createServer(credentials, app)
 
@@ -38,15 +41,13 @@ const http = https.createServer(credentials, app)
 const wws = new socket.Server(http);
 
 wws.use((socket, next) => {
-    if (socket.handshake.query && socket.handshake.query.token) {
-        jwt.verify(socket.handshake.query.token as string, credentials.key, { algorithms: ['RS256'] }, function (err, decoded) {
-            if (err) return next(new Error('Authentication error'));
-            next();
-        });
-    }
-    else {
-        next(new Error('Authentication error'));
-    }
+    console.log('user trying to connect')
+    const token = socket.handshake.headers['authorization']
+    if (token == null) return next(new Error('no token provided'));
+    jwt.verify(token as string, credentials.key, { algorithms: ['RS256'] }, function (err, decoded) {
+        if (err) return next(new Error('Authentication error'));
+        next();
+    });
 }).on("connection", (socket: SocketIO.Socket) => {
     console.log("new client connected");
     socket.send("connection confirmed");
@@ -62,11 +63,8 @@ app.get('/', (req: express.Request, res: express.Response) => {
 })
 
 
-app.post('/authenticate', (req: express.Request, res: express.Response) => {
-    // if no body
-    if (!req.body) res.status(406).json({ status: "error", details: `no request body` })
-
-    const { login, password } = req.body
+app.get('/authenticate', (req: express.Request, res: express.Response) => {
+    const { login, password } = req.headers['authorization'] && JSON.parse(req.headers['authorization'] as string) || {}
 
     //if no login and password inside body
     if (login == undefined || password == undefined)
@@ -76,7 +74,6 @@ app.post('/authenticate', (req: express.Request, res: express.Response) => {
     if (login != process.env.USER_LOGIN || password != process.env.USER_PASSWORD)
         return res.status(403).json({ status: 'error', details: 'invalid login data' })
 
-    console.log(req.body)
 
     const token = jwt.sign({ id: 'mihalx' }, credentials.key, { algorithm: 'RS256', expiresIn: 60 })
     return res.json({ token })

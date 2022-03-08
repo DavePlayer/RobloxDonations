@@ -5,19 +5,22 @@ const main = async () => {
   try {
     process.env.NODE_TLS_REJECT_UNAUTHORIZED='0'
     const json = await fetch('https://127.0.0.1:9000/authenticate', {
-        method: 'POST',
+        method: 'GET',
         headers:{
           'Content-Type': 'application/json',
           'Accept': 'application/json',
+          'Authorization': JSON.stringify({login: 'mihalx', password: 'Maslo123'})
         },
-        body: JSON.stringify({login: '', password: ''})
       })
     const token = await json.json()
     if(token.status && token.status == 'error') return console.log(token);
-    console.log(token)
-    const socket = await io(`https://127.0.0.1:8080?token=${token.token}`, {
+    console.log("token: ",token)
+    const socket = await io(`https://127.0.0.1:8080`, {
       transports: ['websocket'],
       rejectUnauthorized: false,
+      extraHeaders: {
+        Authorization: token.token
+      }
     })
 
     socket.on('connection', (e, data) => console.log('data'))
