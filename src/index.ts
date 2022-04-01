@@ -50,7 +50,7 @@ wws.use((socket, next) => {
     });
 }).on("connection", (socket: SocketIO.Socket) => {
     console.log("new client connected");
-    socket.send("connection confirmed");
+    socket.send("conn");
 
     socket.on("donate::donate", (e, data) => {
         console.log('emited donate: ', data)
@@ -66,6 +66,7 @@ app.get('/', (req: express.Request, res: express.Response) => {
 app.get('/authenticate', (req: express.Request, res: express.Response) => {
     const { login, password } = req.headers['authorization'] && JSON.parse(req.headers['authorization'] as string) || {}
 
+    console.log(`checking user ${login} ${password}`)
     //if no login and password inside body
     if (login == undefined || password == undefined)
         return res.status(403).json({ status: "error", details: `invalid request body` })
@@ -75,7 +76,7 @@ app.get('/authenticate', (req: express.Request, res: express.Response) => {
         return res.status(403).json({ status: 'error', details: 'invalid login data' })
 
 
-    const token = jwt.sign({ id: 'mihalx' }, credentials.key, { algorithm: 'RS256', expiresIn: 60 })
+    const token = jwt.sign({ id: process.env.GAME_LOGIN }, credentials.key, { algorithm: 'RS256', expiresIn: 60 })
     return res.json({ token })
 })
 
@@ -85,6 +86,7 @@ interface request {
     userName: string;
     robuxAmmount: number;
     message: string;
+    lang: string
 }
 
 app.post('/announceDonation', async (req: express.Request, res: express.Response) => {
@@ -95,6 +97,7 @@ app.post('/announceDonation', async (req: express.Request, res: express.Response
         userName: req.body.userName,
         robuxAmmount: req.body.robuxAmmount,
         message: req.body.message,
+        lang: req.body.lang
     }
     if (data.donateImageUrl == undefined || data.message == undefined || data.robuxAmmount == undefined || data.userName == undefined) return res.status(406).json({ status: 'error', details: 'invalid http body structure' })
     const auth = new google.auth.GoogleAuth({
@@ -125,12 +128,13 @@ app.post('/announceDonation', async (req: express.Request, res: express.Response
     //     console.log(error)
     // }
 
-    wws.emit('donate::donate', data)
+    wws.emit('donation::donation', data)
+    console.log('got donation: ', data)
 
     res.send({ xd: 'xd' })
 })
 
 server.listen(9000, () => console.log(`www on port 9000`))
-http.listen(8080, () => console.log("http working on 8080"));
+http.listen(1280, () => console.log("http working on 1280"));
 
 console.log('works again')

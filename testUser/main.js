@@ -15,7 +15,7 @@ const main = async () => {
     const token = await json.json()
     if(token.status && token.status == 'error') return console.log(token);
     console.log("token: ",token)
-    const socket = await io(`https://127.0.0.1:8080`, {
+    const socket = await io(`https://127.0.0.1:1280`, {
       transports: ['websocket'],
       rejectUnauthorized: false,
       extraHeaders: {
