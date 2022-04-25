@@ -86,7 +86,8 @@ interface request {
     userName: string;
     robuxAmmount: number;
     message: string;
-    lang: string
+    lang: string,
+    toWhom: string
 }
 
 app.post('/announceDonation', async (req: express.Request, res: express.Response) => {
@@ -97,7 +98,8 @@ app.post('/announceDonation', async (req: express.Request, res: express.Response
         userName: req.body.userName,
         robuxAmmount: req.body.robuxAmmount,
         message: req.body.message,
-        lang: req.body.lang
+        lang: req.body.lang,
+        toWhom: req.body.toWhom
     }
     if (data.donateImageUrl == undefined || data.message == undefined || data.robuxAmmount == undefined || data.userName == undefined) return res.status(406).json({ status: 'error', details: 'invalid http body structure' })
     const auth = new google.auth.GoogleAuth({
