@@ -3,7 +3,7 @@ import rateLimit from 'express-rate-limit'
 import helmet from 'helmet'
 import SocketIO from 'socket.io'
 import dotenv from 'dotenv'
-import { google } from 'googleapis'
+// import { google } from 'googleapis'
 import socket from 'socket.io'
 import moment from 'moment'
 import https from 'https'
@@ -102,10 +102,10 @@ app.post('/announceDonation', async (req: express.Request, res: express.Response
         toWhom: req.body.toWhom
     }
     if (data.donateImageUrl == undefined || data.message == undefined || data.robuxAmmount == undefined || data.userName == undefined) return res.status(406).json({ status: 'error', details: 'invalid http body structure' })
-    const auth = new google.auth.GoogleAuth({
-        scopes: ['https://www.googleapis.com/auth/spreadsheets']
-    });
-    const time = moment().local().unix() + (3600) // 3600 because of winter time :|
+    // // const auth = new google.auth.GoogleAuth({
+    // //     scopes: ['https://www.googleapis.com/auth/spreadsheets']
+    // // });
+    // const time = moment().local().unix() + (3600) // 3600 because of winter time :|
     // hate working with time
     // doctor strange is going to kill me
 
